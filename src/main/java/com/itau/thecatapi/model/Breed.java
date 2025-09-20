@@ -1,9 +1,11 @@
 package com.itau.thecatapi.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "breeds")
+@Data
 public class Breed {
 
     @Id
@@ -81,7 +83,7 @@ public class Breed {
     @Column(name = "hairless")
     private Integer hairless;
 
-    @Column(name = "\"natural\"") 
+    @Column(name = "\"natural\"") // natural é uma palavra chave reservada do PostgreSQL -> TODO: verificar se é boolean na documentação e alterar para isNatural
     private Integer natural;
 
     @Column(name = "rare")
@@ -117,8 +119,9 @@ public class Breed {
     @Embedded
     private Weight weight;
 
-    @Embedded
-    private CatImage image;
+
+    //@Embedded
+    //private CatImage image;
 
     public Breed() {
     }
@@ -419,13 +422,13 @@ public class Breed {
         this.weight = weight;
     }
 
-    public CatImage getImage() {
-        return image;
-    }
-
-    public void setImage(CatImage image) {
-        this.image = image;
-    }
+//    public CatImage getImage() {
+//        return image;
+//    }
+//
+//    public void setImage(CatImage image) {
+//        this.image = image;
+//    }
 
     @Embeddable
     public static class Weight {
@@ -461,62 +464,62 @@ public class Breed {
         }
     }
 
-    @Embeddable
-    public static class CatImage {
-
-        @Column(name = "image_id")
-        private String id;
-
-        @Column(name = "image_width")
-        private Integer width;
-
-        @Column(name = "image_height")
-        private Integer height;
-
-        @Column(name = "image_url")
-        private String url;
-
-        public CatImage() {
-        }
-
-        public CatImage(String id, Integer width, Integer height, String url) {
-            this.id = id;
-            this.width = width;
-            this.height = height;
-            this.url = url;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public Integer getWidth() {
-            return width;
-        }
-
-        public void setWidth(Integer width) {
-            this.width = width;
-        }
-
-        public Integer getHeight() {
-            return height;
-        }
-
-        public void setHeight(Integer height) {
-            this.height = height;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-    }
+//    @Embeddable
+//    public static class CatImage {
+//
+//        @Column(name = "image_id")
+//        private String id;
+//
+//        @Column(name = "image_width")
+//        private Integer width;
+//
+//        @Column(name = "image_height")
+//        private Integer height;
+//
+//        @Column(name = "image_url")
+//        private String url;
+//
+//        public CatImage() {
+//        }
+//
+//        public CatImage(String id, Integer width, Integer height, String url) {
+//            this.id = id;
+//            this.width = width;
+//            this.height = height;
+//            this.url = url;
+//        }
+//
+//        public String getId() {
+//            return id;
+//        }
+//
+//        public void setId(String id) {
+//            this.id = id;
+//        }
+//
+//        public Integer getWidth() {
+//            return width;
+//        }
+//
+//        public void setWidth(Integer width) {
+//            this.width = width;
+//        }
+//
+//        public Integer getHeight() {
+//            return height;
+//        }
+//
+//        public void setHeight(Integer height) {
+//            this.height = height;
+//        }
+//
+//        public String getUrl() {
+//            return url;
+//        }
+//
+//        public void setUrl(String url) {
+//            this.url = url;
+//        }
+//    }
 
 }
