@@ -2,10 +2,12 @@ package com.itau.thecatapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(name = "breeds")
 @Data
+@DynamicUpdate
 public class Breed {
 
     @Id

@@ -1,16 +1,15 @@
 package com.itau.thecatapi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.itau.thecatapi.dto.BreedImageDTO;
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.util.Map;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(name = "images")
 @Data
+@DynamicUpdate
 public class BreedImage {
 
     @Id
@@ -27,24 +26,37 @@ public class BreedImage {
     private Integer height;
 
     @Column(name = "favourite")
-    private Boolean favourite = false;
+    private Boolean favourite = false;  // TODO: remover campo?
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "breed_id", referencedColumnName = "id")
     private Breed breed;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    private Category category;
 
     @JsonProperty("breed")
     public String getBreedIdOnly() {
         return breed != null ? breed.getId() : null;
     }
 
-    public BreedImage(String id, String url, Integer width, Integer height, Boolean favourite, Breed breed) {
+    @JsonProperty("category")
+    public Integer getCategoryIdOnly() {
+        return category != null ? category.getId() : null;
+    }
+
+    public BreedImage() {
+    }
+
+    public BreedImage(String id, String url, Integer width, Integer height, Boolean favourite, Breed breed, Category category) {
         this.id = id;
         this.url = url;
         this.width = width;
         this.height = height;
         this.favourite = favourite;
         this.breed = breed;
+        this.category = category;
     }
 
     public String getId() {
@@ -99,7 +111,8 @@ public class BreedImage {
                 response.getWidth(),
                 response.getHeight(),
                 response.getFavourite(),
-                breed
+                breed,
+                null
         );
     }
 }
