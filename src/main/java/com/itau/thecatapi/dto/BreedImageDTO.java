@@ -1,6 +1,7 @@
 package com.itau.thecatapi.dto;
 
 import com.itau.thecatapi.model.Breed;
+import com.itau.thecatapi.model.Category;
 import lombok.Data;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 @Data
 public class BreedImageDTO {
     private List<Breed> breeds;
+    private List<Category> categories;
     private String id;
     private String url;
     private Integer width;
@@ -20,6 +22,14 @@ public class BreedImageDTO {
 
     public void setBreeds(List<Breed> breeds) {
         this.breeds = breeds;
+    }
+
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
     }
 
     public String getId() {

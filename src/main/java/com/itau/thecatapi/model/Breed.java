@@ -11,6 +11,7 @@ import org.hibernate.annotations.DynamicUpdate;
 public class Breed {
 
     @Id
+    @Column(name = "id")
     private String id;
 
     @Column(name = "name", nullable = false)

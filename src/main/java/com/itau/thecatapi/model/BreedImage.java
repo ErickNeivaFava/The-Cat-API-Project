@@ -105,6 +105,11 @@ public class BreedImage {
             breed = response.getBreeds().get(0);
         }
 
+        Category category = null;
+        if (response.getCategories() != null && !response.getCategories().isEmpty()) {
+            category = response.getCategories().get(0);
+        }
+
         return new BreedImage(
                 response.getId(),
                 response.getUrl(),
@@ -112,7 +117,7 @@ public class BreedImage {
                 response.getHeight(),
                 response.getFavourite(),
                 breed,
-                null
+                category
         );
     }
 }
