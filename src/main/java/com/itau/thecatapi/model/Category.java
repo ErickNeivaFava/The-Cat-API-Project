@@ -20,6 +20,12 @@ public class Category { // CATegory
     @Column(name = "name")
     private String name;
 
+    public Category() {
+    }
+
+    public Category(int id, String name) {
+    }
+
     public Integer getId() {
         return id;
     }
