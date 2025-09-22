@@ -91,12 +91,28 @@ public class BreedImage {
         this.height = height;
     }
 
+    public Boolean getFavourite() {
+        return favourite;
+    }
+
+    public void setFavourite(Boolean favourite) {
+        this.favourite = favourite;
+    }
+
     public Breed getBreed() {
         return breed;
     }
 
     public void setBreed(Breed breed) {
         this.breed = breed;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public static BreedImage fromResponse(BreedImageDTO response) {

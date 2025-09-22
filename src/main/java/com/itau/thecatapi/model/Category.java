@@ -7,6 +7,8 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "category")
 @Data
@@ -23,7 +25,9 @@ public class Category { // CATegory
     public Category() {
     }
 
-    public Category(int id, String name) {
+    public Category(Integer id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
     public Integer getId() {
@@ -40,5 +44,27 @@ public class Category { // CATegory
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "Category{" +
+                "id=" + id +
+                ", name=" + name +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Category category = (Category) o;
+        return Objects.equals(id, category.id) &&
+                Objects.equals(name, category.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
     }
 }

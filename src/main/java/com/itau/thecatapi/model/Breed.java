@@ -36,10 +36,10 @@ public class Breed {
     private String lifeSpan;
 
     @Column(name = "indoor")
-    private Integer indoor;
+    private Integer indoor; // TODO: alterar para boolean?
 
     @Column(name = "lap")
-    private Integer lap;
+    private Integer lap; // TODO: alterar para boolean?
 
     @Column(name = "alt_names")
     private String altNames;
@@ -81,31 +81,31 @@ public class Breed {
     private Integer vocalisation;
 
     @Column(name = "experimental")
-    private Integer experimental;
+    private Integer experimental; // TODO: alterar para boolean?
 
     @Column(name = "hairless")
-    private Integer hairless;
+    private Integer hairless; // TODO: alterar para boolean?
 
     @Column(name = "\"natural\"") // natural é uma palavra chave reservada do PostgreSQL -> TODO: verificar se é boolean na documentação e alterar para isNatural
-    private Integer natural;
+    private Integer natural; // TODO: alterar para boolean?
 
     @Column(name = "rare")
-    private Integer rare;
+    private Integer rare; // TODO: alterar para boolean?
 
     @Column(name = "rex")
-    private Integer rex;
+    private Integer rex; // TODO: alterar para boolean?
 
     @Column(name = "suppressed_tail")
-    private Integer suppressedTail;
+    private Integer suppressedTail; // TODO: alterar para boolean?
 
     @Column(name = "short_legs")
-    private Integer shortLegs;
+    private Integer shortLegs; // TODO: alterar para boolean?
 
     @Column(name = "wikipedia_url")
     private String wikipediaUrl;
 
     @Column(name = "hypoallergenic")
-    private Integer hypoallergenic;
+    private Integer hypoallergenic;  // TODO: alterar para boolean?
 
     @Column(name = "cfa_url")
     private String cfaUrl;
@@ -122,9 +122,45 @@ public class Breed {
     @Embedded
     private Weight weight;
 
-
-    //@Embedded
-    //private CatImage image;
+    public Breed(String id, String name, String temperament, String origin, String countryCodes, String countryCode, String description, String lifeSpan, Integer indoor, Integer lap, String altNames, Integer adaptability, Integer affectionLevel, Integer childFriendly, Integer dogFriendly, Integer energyLevel, Integer grooming, Integer healthIssues, Integer intelligence, Integer sheddingLevel, Integer socialNeeds, Integer strangerFriendly, Integer vocalisation, Integer experimental, Integer hairless, Integer natural, Integer rare, Integer rex, Integer suppressedTail, Integer shortLegs, String wikipediaUrl, Integer hypoallergenic, String cfaUrl, String vetstreetUrl, String vcahospitalsUrl, String referenceImageId, Weight weight) {
+        this.id = id;
+        this.name = name;
+        this.temperament = temperament;
+        this.origin = origin;
+        this.countryCodes = countryCodes;
+        this.countryCode = countryCode;
+        this.description = description;
+        this.lifeSpan = lifeSpan;
+        this.indoor = indoor;
+        this.lap = lap;
+        this.altNames = altNames;
+        this.adaptability = adaptability;
+        this.affectionLevel = affectionLevel;
+        this.childFriendly = childFriendly;
+        this.dogFriendly = dogFriendly;
+        this.energyLevel = energyLevel;
+        this.grooming = grooming;
+        this.healthIssues = healthIssues;
+        this.intelligence = intelligence;
+        this.sheddingLevel = sheddingLevel;
+        this.socialNeeds = socialNeeds;
+        this.strangerFriendly = strangerFriendly;
+        this.vocalisation = vocalisation;
+        this.experimental = experimental;
+        this.hairless = hairless;
+        this.natural = natural;
+        this.rare = rare;
+        this.rex = rex;
+        this.suppressedTail = suppressedTail;
+        this.shortLegs = shortLegs;
+        this.wikipediaUrl = wikipediaUrl;
+        this.hypoallergenic = hypoallergenic;
+        this.cfaUrl = cfaUrl;
+        this.vetstreetUrl = vetstreetUrl;
+        this.vcahospitalsUrl = vcahospitalsUrl;
+        this.referenceImageId = referenceImageId;
+        this.weight = weight;
+    }
 
     public Breed() {
     }
@@ -425,14 +461,6 @@ public class Breed {
         this.weight = weight;
     }
 
-//    public CatImage getImage() {
-//        return image;
-//    }
-//
-//    public void setImage(CatImage image) {
-//        this.image = image;
-//    }
-
     @Embeddable
     public static class Weight {
 
@@ -466,63 +494,5 @@ public class Breed {
             this.metric = metric;
         }
     }
-
-//    @Embeddable
-//    public static class CatImage {
-//
-//        @Column(name = "image_id")
-//        private String id;
-//
-//        @Column(name = "image_width")
-//        private Integer width;
-//
-//        @Column(name = "image_height")
-//        private Integer height;
-//
-//        @Column(name = "image_url")
-//        private String url;
-//
-//        public CatImage() {
-//        }
-//
-//        public CatImage(String id, Integer width, Integer height, String url) {
-//            this.id = id;
-//            this.width = width;
-//            this.height = height;
-//            this.url = url;
-//        }
-//
-//        public String getId() {
-//            return id;
-//        }
-//
-//        public void setId(String id) {
-//            this.id = id;
-//        }
-//
-//        public Integer getWidth() {
-//            return width;
-//        }
-//
-//        public void setWidth(Integer width) {
-//            this.width = width;
-//        }
-//
-//        public Integer getHeight() {
-//            return height;
-//        }
-//
-//        public void setHeight(Integer height) {
-//            this.height = height;
-//        }
-//
-//        public String getUrl() {
-//            return url;
-//        }
-//
-//        public void setUrl(String url) {
-//            this.url = url;
-//        }
-//    }
 
 }

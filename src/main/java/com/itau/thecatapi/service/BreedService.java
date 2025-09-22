@@ -164,7 +164,7 @@ public class BreedService {
         }, executorService);
     }
 
-    private BreedResponseDTO convertToDTO(Breed breed) {
+    public BreedResponseDTO convertToDTO(Breed breed) {
         logger.trace("Convertendo Breed para DTO: {}", breed.getName());
         return new BreedResponseDTO(
                 breed.getId(),
