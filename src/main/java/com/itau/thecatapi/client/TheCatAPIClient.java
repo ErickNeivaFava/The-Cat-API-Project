@@ -44,68 +44,133 @@ public class TheCatAPIClient {
 
     public CompletableFuture<List<Breed>> getAllBreedsAsync() {
         return CompletableFuture.supplyAsync(() -> {
-            List<Breed> allBreeds = new ArrayList<>();
+            logger.info("Iniciando obtenção de todas as raças");
 
+            List<Breed> allBreeds = new ArrayList<>();
             ObjectMapper objectMapper = httpUtils.getObjectMapper();
 
-            String firstUrl = UriComponentsBuilder.fromHttpUrl(httpUtils.buildUrl("/breeds"))
-                    .queryParam("limit", 10)
-                    .queryParam("page", 0)
-                    .toUriString();
+            final AtomicInteger remainingRequests = new AtomicInteger(0);
+            final AtomicLong resetTime = new AtomicLong(0);
+            final Object lock = new Object();
+
+            int totalPages = Integer.MAX_VALUE;
 
             try {
-                ResponseEntity<String> firstResponse = restTemplate.exchange(
-                        firstUrl, HttpMethod.GET, httpUtils.createDefaultEntity(), String.class);
+                for (int page = 0; page < totalPages; page++) {
+                    String url = UriComponentsBuilder.fromHttpUrl(httpUtils.buildUrl("/breeds"))
+                            .queryParam("limit", 10)
+                            .queryParam("page", page)
+                            .toUriString();
 
-                List<Breed> firstPageBreeds = objectMapper.readValue(
-                        firstResponse.getBody(),
-                        objectMapper.getTypeFactory().constructCollectionType(List.class, Breed.class));
+                    ResponseEntity<String> response = null;
 
-                if (firstPageBreeds != null) {
-                    allBreeds.addAll(firstPageBreeds);
-
-                    HttpHeaders headers = firstResponse.getHeaders();
-                    int totalPages = 1;
-
-                    if (headers.containsKey("Pagination-Count")) {
+                    for (int attempt = 0; attempt < 3; attempt++) {
                         try {
-                            int totalElements = Integer.parseInt(headers.getFirst("Pagination-Count"));
-                            totalPages = (int) Math.ceil((double) totalElements / 10);
-                        } catch (NumberFormatException e) {
-                            return allBreeds;
+                            synchronized (lock) {
+                                long currentTime = System.currentTimeMillis();
+                                if (currentTime > resetTime.get()) {
+                                    remainingRequests.set(0);
+                                }
+
+                                if (remainingRequests.get() >= 120) {
+                                    long waitTime = resetTime.get() - currentTime;
+                                    if (waitTime > 0) {
+                                        logger.warn("Rate limit atingido ({} requests). Aguardando {} ms para reset",
+                                                remainingRequests.get(), waitTime);
+                                        Thread.sleep(waitTime);
+                                        remainingRequests.set(0);
+                                        logger.info("Rate limit resetado. Continuando processamento");
+                                    }
+                                }
+                            }
+
+                            logger.debug("Fazendo request para página {}: {}", page, url);
+                            response = restTemplate.exchange(
+                                    url, HttpMethod.GET, httpUtils.createDefaultEntity(), String.class);
+
+                            HttpHeaders headers = response.getHeaders();
+                            if (headers.containsKey("ratelimit-remaining") && headers.containsKey("ratelimit-reset")) {
+                                synchronized (lock) {
+                                    int newRemaining = Integer.parseInt(headers.getFirst("ratelimit-remaining"));
+                                    remainingRequests.set(newRemaining);
+                                    String resetTimeStr = headers.getFirst("ratelimit-reset");
+                                    Instant resetInstant = Instant.parse(resetTimeStr);
+                                    resetTime.set(resetInstant.toEpochMilli());
+                                    logger.debug("Rate limit atualizado - Restantes: {}, Reset em: {}",
+                                            newRemaining, resetInstant);
+                                }
+                            }
+
+                            break; // sucesso
+                        } catch (Exception e) {
+                            logger.warn("Tentativa {} falhou para página {}: {}", (attempt + 1), page, e.getMessage(), e);
+
+                            if (e.getMessage().contains("429") || e.getMessage().contains("Too Many Requests")) {
+                                logger.error("Rate limiting detectado (429). Aguardando 60 segundos");
+                                try {
+                                    Thread.sleep(60000);
+                                } catch (InterruptedException ie) {
+                                    logger.error("Thread interrompida durante espera de rate limit", ie);
+                                    Thread.currentThread().interrupt();
+                                    throw new RuntimeException("Thread interrompida", ie);
+                                }
+                            }
+
+                            if (attempt == 2) {
+                                logger.error("Todas as 3 tentativas falharam para página: {}", page);
+                                throw new RuntimeException("Falha após 3 tentativas para página " + page, e);
+                            }
+
+                            long backoffTime = (long) (Math.pow(2, attempt) * 1000);
+                            logger.debug("Aplicando backoff de {} ms antes da próxima tentativa", backoffTime);
+                            try {
+                                Thread.sleep(backoffTime);
+                            } catch (InterruptedException ie) {
+                                logger.error("Thread interrompida durante backoff", ie);
+                                Thread.currentThread().interrupt();
+                                throw new RuntimeException("Thread interrompida", ie);
+                            }
                         }
                     }
 
-                    for (int page = 1; page < totalPages; page++) {
-                        String url = UriComponentsBuilder.fromHttpUrl(httpUtils.buildUrl("/breeds"))
-                                .queryParam("limit", 10)
-                                .queryParam("page", page)
-                                .toUriString();
+                    if (response == null) {
+                        throw new RuntimeException("Falha inesperada ao processar requisição da página " + page);
+                    }
 
-                        ResponseEntity<String> response = restTemplate.exchange(
-                                url, HttpMethod.GET, httpUtils.createDefaultEntity(), String.class);
+                    List<Breed> currentPageBreeds = objectMapper.readValue(
+                            response.getBody(),
+                            objectMapper.getTypeFactory().constructCollectionType(List.class, Breed.class));
 
-                        List<Breed> currentPageBreeds = objectMapper.readValue(
-                                response.getBody(),
-                                objectMapper.getTypeFactory().constructCollectionType(List.class, Breed.class));
+                    if (currentPageBreeds == null || currentPageBreeds.isEmpty()) {
+                        logger.info("Página {} retornou vazia. Encerrando busca.", page);
+                        break;
+                    }
 
-                        if (currentPageBreeds != null && !currentPageBreeds.isEmpty()) {
-                            allBreeds.addAll(currentPageBreeds);
-                        }
+                    allBreeds.addAll(currentPageBreeds);
+                    logger.info("Página {} processada. {} raças adicionadas", page, currentPageBreeds.size());
 
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
+                    if (page == 0) {
+                        HttpHeaders headers = response.getHeaders();
+                        if (headers.containsKey("Pagination-Count")) {
+                            try {
+                                int totalElements = Integer.parseInt(headers.getFirst("Pagination-Count"));
+                                totalPages = (int) Math.ceil((double) totalElements / 10);
+                                logger.info("Total de {} elementos encontrados. Serão necessárias {} páginas",
+                                        totalElements, totalPages);
+                            } catch (NumberFormatException e) {
+                                logger.warn("Erro ao parsear Pagination-Count, continuando até página vazia");
+                            }
                         }
                     }
                 }
+
+                logger.info("Obtenção de raças concluída. Total de {} raças obtidas", allBreeds.size());
+                return allBreeds;
+
             } catch (Exception e) {
+                logger.error("Erro ao obter raças", e);
                 throw new RuntimeException("Erro ao mapear resposta JSON", e);
             }
-
-            return allBreeds;
         }, apiExecutor);
     }
 
@@ -264,6 +329,11 @@ public class TheCatAPIClient {
 
     public CompletableFuture<List<BreedImage>> getBreedImagesByCriteriaAsync(List<String> criteria) {
         return CompletableFuture.supplyAsync(() -> {
+
+            if (criteria == null || criteria.isEmpty()) {
+                return Collections.emptyList();
+            }
+
             List<BreedImage> breedImages = new ArrayList<>();
 
             ObjectMapper objectMapper = httpUtils.getObjectMapper();
