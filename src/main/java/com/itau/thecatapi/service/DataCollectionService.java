@@ -2,6 +2,7 @@ package com.itau.thecatapi.service;
 
 
 import com.itau.thecatapi.client.TheCatAPIClient;
+import com.itau.thecatapi.exception.DataCollectionException;
 import com.itau.thecatapi.model.Breed;
 import com.itau.thecatapi.model.BreedImage;
 import com.itau.thecatapi.model.Category;
@@ -16,9 +17,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 @Service
 public class DataCollectionService {
@@ -64,13 +62,17 @@ public class DataCollectionService {
         });
 
         return CompletableFuture.allOf(futureHats, futureSunglasses, futureBreedImage)
+                .exceptionally(ex -> {
+                    logger.error("Falha geral no processo: {}", ex.getMessage());
+                    throw new DataCollectionException("Falha na coleta de dados: {}" + ex.getMessage());
+                })
                 .thenApply(ignored -> {
                     logger.info("Processo de coleta de dados concluído!");
                     return null;
                 });
     }
 
-    private CompletableFuture<List<Breed>> saveAllBreedsAsync() {
+    public CompletableFuture<List<Breed>> saveAllBreedsAsync() {
         logger.info("Coletando informações das raças de forma assíncrona");
 
         return catApiClient.getAllBreedsAsync()
@@ -94,7 +96,7 @@ public class DataCollectionService {
                 });
     }
 
-    private CompletableFuture<List<BreedImage>> saveAllBreedImagesAsync(List<Breed> breeds) {
+    public CompletableFuture<List<BreedImage>> saveAllBreedImagesAsync(List<Breed> breeds) {
         logger.info("Coletando informações das imagens de raças de forma assíncrona");
 
         return catApiClient.getBreedImagesAsync(breeds)
@@ -118,7 +120,7 @@ public class DataCollectionService {
                 });
     }
 
-    private CompletableFuture<List<BreedImage>> saveAllBreedImagesByCriteriaAsync(List<String> categories) {
+    public CompletableFuture<List<BreedImage>> saveAllBreedImagesByCriteriaAsync(List<String> categories) {
         logger.info("Coletando informações das imagens específicas ({}) de forma assíncrona", categories);
 
         return catApiClient.getBreedImagesByCriteriaAsync(categories)
@@ -142,7 +144,7 @@ public class DataCollectionService {
                 });
     }
 
-    private CompletableFuture<List<Category>> saveAllCategoriesAsync() {
+    public CompletableFuture<List<Category>> saveAllCategoriesAsync() {
         logger.info("Coletando informações das categorias de forma assíncrona");
         return catApiClient.getCategoriesAsync().thenCompose(categories -> {
             logger.debug("Received {} categories, saving in batch", categories.size());
@@ -161,7 +163,7 @@ public class DataCollectionService {
             return null;
         });
     }
-
+}
 //    private CompletableFuture<List<Breed>> saveBreedsIndividuallyAsync() {
 //        logger.info("Coletando informações das raças forma assíncrona");
 //
@@ -298,4 +300,4 @@ public class DataCollectionService {
 //        });
 //    }
 
-}
+
