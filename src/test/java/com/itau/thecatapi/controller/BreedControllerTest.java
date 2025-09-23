@@ -33,8 +33,8 @@ class BreedControllerTest {
 
     @BeforeEach
     void setUp() {
-        breed1 = new BreedResponseDTO("abys", "Abyssinian", "Egypt", "Active, Energetic, Independent, Intelligent, Gentle", "The Abyssinian is easy to care for, and a joy to have in your home. They’re affectionate cats and love both people and other animals.");
-        breed2 = new BreedResponseDTO("aege", "Aegean", "Greece", "Affectionate, Social, Intelligent, Playful, Active", "Native to the Greek islands known as the Cyclades in the Aegean Sea, these are natural cats, meaning they developed without humans getting involved in their breeding. As a breed, Aegean Cats are rare, although they are numerous on their home islands. They are generally friendly toward people and can be excellent cats for families with children.");
+        breed1 = new BreedResponseDTO("abys", "Abyssinian", "Egypt", "Active, Energetic, Independent, Intelligent, Gentle", "The Abyssinian is easy to care for, and a joy to have in your home. They’re affectionate cats and love both people and other animals.", "https://cdn2.thecatapi.com/images/itfFA4NWS.jpg");
+        breed2 = new BreedResponseDTO("aege", "Aegean", "Greece", "Affectionate, Social, Intelligent, Playful, Active", "Native to the Greek islands known as the Cyclades in the Aegean Sea, these are natural cats, meaning they developed without humans getting involved in their breeding. As a breed, Aegean Cats are rare, although they are numerous on their home islands. They are generally friendly toward people and can be excellent cats for families with children.", "https://cdn2.thecatapi.com/images/h19-vtIeX.jpg");
     }
 
     @Test
@@ -199,7 +199,7 @@ class BreedControllerTest {
     void getBreedById_BreedWithNullId_ShouldThrowException() {
         // Arrange
         String id = "invalid";
-        BreedResponseDTO nullBreed = new BreedResponseDTO(null, null, null, null, null);
+        BreedResponseDTO nullBreed = new BreedResponseDTO(null, null, null, null, null, null);
 
         when(breedService.getBreedById(id))
                 .thenReturn(CompletableFuture.completedFuture(nullBreed));

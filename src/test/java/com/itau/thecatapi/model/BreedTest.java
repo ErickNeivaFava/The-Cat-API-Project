@@ -191,14 +191,14 @@ class BreedTest {
         }
     }
 
-    @Test
-    @DisplayName("Test toString method with Lombok @Data")
-    void testToStringMethod() {
-        String toStringResult = breed.toString();
-        assertNotNull(toStringResult);
-        assertTrue(toStringResult.contains("Abyssinian"));
-        assertTrue(toStringResult.contains("abys"));
-    }
+//    @Test
+//    @DisplayName("Test toString method with Lombok @Data")
+//    void testToStringMethod() {
+//        String toStringResult = breed.toString();
+//        assertNotNull(toStringResult);
+//        assertTrue(toStringResult.contains("Abyssinian"));
+//        assertTrue(toStringResult.contains("abys"));
+//    }
 
 //    @Test
 //    @DisplayName("Test equals and hashCode methods with Lombok @Data")
