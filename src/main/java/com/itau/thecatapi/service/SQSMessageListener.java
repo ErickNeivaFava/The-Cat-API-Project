@@ -70,7 +70,7 @@ public class SQSMessageListener {
         }
     }
 
-    private String processBreedInformation(BreedRequestMessage request) {
+    public String processBreedInformation(BreedRequestMessage request) {
         StringBuilder info = new StringBuilder();
 
         if (request.getBreedId() != null) {
@@ -105,7 +105,7 @@ public class SQSMessageListener {
         return info.toString();
     }
 
-    private List<String> getImagesForRequest(BreedRequestMessage request) {
+    public List<String> getImagesForRequest(BreedRequestMessage request) {
         if (request.getBreedId() != null) {
             return breedImageService.getImageUrlsByBreedId(request.getBreedId(), 3).join();
         }
