@@ -15,10 +15,12 @@ public class SecretsManagerCredentialsProvider implements AwsCredentialsProvider
 
     private final SecretsManagerClient secretsManagerClient;
     private final String secretName;
+    private final String catApiKey;
 
-    public SecretsManagerCredentialsProvider(SecretsManagerClient secretsManagerClient, String secretName) {
+    public SecretsManagerCredentialsProvider(SecretsManagerClient secretsManagerClient, String secretName, String catApiKey) {
         this.secretsManagerClient = secretsManagerClient;
         this.secretName = secretName;
+        this.catApiKey = catApiKey;
     }
 
     @Override
@@ -40,6 +42,24 @@ public class SecretsManagerCredentialsProvider implements AwsCredentialsProvider
 
         return AwsBasicCredentials.create(secretMap.get("accessKey"), secretMap.get("secretKey"));
     }
+
+    public String getApiKey() {
+        GetSecretValueRequest request = GetSecretValueRequest.builder()
+                .secretId(catApiKey)
+                .build();
+
+        GetSecretValueResponse response = secretsManagerClient.getSecretValue(request);
+        String secretString = response.secretString();
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            Map<String, String> secretMap = mapper.readValue(secretString, Map.class);
+            return secretMap.get("API_KEY");
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Erro ao converter segredo para mapa", e);
+        }
+    }
+
 }
 
 

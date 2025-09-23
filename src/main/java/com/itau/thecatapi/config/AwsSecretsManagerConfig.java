@@ -17,6 +17,9 @@ public class AwsSecretsManagerConfig {
     @Value("${aws.secret.name}")
     private String secretName;
 
+    @Value("${thecatapi.api-key}")
+    private String theCatApiKey;
+
     @Bean
     public SecretsManagerClient secretsManagerClient() {
         return SecretsManagerClient.builder()
@@ -27,6 +30,11 @@ public class AwsSecretsManagerConfig {
 
     @Bean
     public AwsCredentialsProvider awsCredentialsProvider(SecretsManagerClient secretsManagerClient) {
-        return new SecretsManagerCredentialsProvider(secretsManagerClient, secretName);
+        return new SecretsManagerCredentialsProvider(secretsManagerClient, secretName, theCatApiKey);
+    }
+
+    @Bean(name="thecatapi.api-key")
+    public String apiKey(SecretsManagerCredentialsProvider provider) {
+        return provider.getApiKey();
     }
 }
