@@ -171,7 +171,8 @@ public class BreedService {
                 breed.getName(),
                 breed.getOrigin(),
                 breed.getTemperament(),
-                breed.getDescription()
+                breed.getDescription(),
+                "https://cdn2.thecatapi.com/images/" + breed.getReferenceImageId() + ".jpg"
         );
     }
 
