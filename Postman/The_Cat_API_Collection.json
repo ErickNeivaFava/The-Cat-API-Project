@@ -9,7 +9,7 @@
 			"name": "Itau - The Cat API",
 			"item": [
 				{
-					"name": "/api/breeds",
+					"name": "/api/breeds - consultas internas",
 					"item": [
 						{
 							"name": "Buscar todas as raças",
@@ -217,6 +217,133 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "/api/async/breeds - consultas assincronas internas",
+					"item": [
+						{
+							"name": "Buscar Todas as raças",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/api/async/breeds/all?email={{email}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"async",
+										"breeds",
+										"all"
+									],
+									"query": [
+										{
+											"key": "email",
+											"value": "{{email}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Buscar raça por ID",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/api/async/breeds/breed/{{breedId}}?email={{email}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"async",
+										"breeds",
+										"breed",
+										"{{breedId}}"
+									],
+									"query": [
+										{
+											"key": "breedId",
+											"value": "abys",
+											"disabled": true
+										},
+										{
+											"key": "email",
+											"value": "{{email}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Buscar raça por temperamento",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/api/async/breeds/temperament?temperament={{temperament}}&email={{email}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"async",
+										"breeds",
+										"temperament"
+									],
+									"query": [
+										{
+											"key": "temperament",
+											"value": "{{temperament}}"
+										},
+										{
+											"key": "email",
+											"value": "{{email}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Buscar raça por origem",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/api/async/breeds/origin?origin={{origin}}&email={{email}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"async",
+										"breeds",
+										"origin"
+									],
+									"query": [
+										{
+											"key": "origin",
+											"value": "{{origin}}"
+										},
+										{
+											"key": "email",
+											"value": "{{email}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		}
@@ -224,17 +351,22 @@
 	"variable": [
 		{
 			"key": "breedId",
-			"value": "abys",
+			"value": "",
 			"type": "default"
 		},
 		{
 			"key": "origin",
-			"value": "United States",
+			"value": "",
 			"type": "default"
 		},
 		{
 			"key": "temperament",
-			"value": "Curious",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "email",
+			"value": "",
 			"type": "default"
 		}
 	]
