@@ -1,0 +1,96 @@
+name: Deploy do ECS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: sa-east-1
+      ECR_REPOSITORY: thecatapi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Compilar com Maven
+        run: mvn clean package -DskipTests
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configurar credenciais AWS via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::777184857830:role/git-actions
+          aws-region: sa-east-1
+
+      - name: Login no Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Buildar e enviar imagem Docker para o ECR
+        id: docker-build
+        run: |
+          ls
+          IMAGE_TAG=latest
+          IMAGE_URL=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          docker build -t $IMAGE_URL -f docker/Dockerfile .
+          docker push $IMAGE_URL
+          echo "image-url=$IMAGE_URL" >> $GITHUB_OUTPUT
+
+      - name: Limpar imagens antigas do ECR
+        run: |
+          REPO=${{ env.ECR_REPOSITORY }}
+          REGISTRY=${{ steps.login-ecr.outputs.registry }}
+
+          echo "Buscando imagens antigas com tag diferente de 'latest'..."
+          IMAGES_TAGGED=$(aws ecr list-images \
+            --repository-name $REPO \
+            --query 'imageIds[?imageTag!=`latest` && imageTag!=null]' \
+            --output json)
+
+          echo "Buscando imagens sem tag..."
+          IMAGES_UNTAGGED=$(aws ecr list-images \
+            --repository-name $REPO \
+            --filter "tagStatus=UNTAGGED" \
+            --query 'imageIds' \
+            --output json)
+
+          IMAGES_TO_DELETE=$(jq -s add <(echo "$IMAGES_TAGGED") <(echo "$IMAGES_UNTAGGED"))
+
+          if [ "$IMAGES_TO_DELETE" != "[]" ]; then
+            echo "Deletando imagens antigas..."
+            aws ecr batch-delete-image --repository-name $REPO --image-ids "$IMAGES_TO_DELETE"
+          else
+            echo "Nenhuma imagem antiga para deletar."
+          fi
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Inicializar Terraform
+        run: terraform -chdir=infra/terraform init
+
+      - name: Aplicar Terraform
+        run: |
+          echo "Usando imagem: ${{ steps.docker-build.outputs.image-url }}"
+          terraform -chdir=infra/terraform apply -auto-approve \
+            -var "docker_image_url=${{ steps.docker-build.outputs.image-url }}" \
+            -var "db_user=${{ secrets.DB_USER }}" \
+            -var "aws_account_id=777184857830" \
+            -var-file=env/prod/prod.tfvars
