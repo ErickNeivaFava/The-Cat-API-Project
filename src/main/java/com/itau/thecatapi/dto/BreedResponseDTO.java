@@ -6,16 +6,18 @@ public class BreedResponseDTO {
     private String origin;
     private String temperament;
     private String description;
+    private String imageUrl;
 
     public BreedResponseDTO() {
     }
 
-    public BreedResponseDTO(String id, String name, String origin, String temperament, String description) {
+    public BreedResponseDTO(String id, String name, String origin, String temperament, String description, String imageUrl) {
         this.id = id;
         this.name = name;
         this.origin = origin;
         this.temperament = temperament;
         this.description = description;
+        this.imageUrl = imageUrl;
     }
 
     public String getId() {
@@ -58,4 +60,11 @@ public class BreedResponseDTO {
         this.description = description;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }
