@@ -1,4 +1,4 @@
-# The Cat API Integration
+# The Cat API Project
 
 Este projeto é uma aplicação Java Spring Boot que integra com a The Cat API para coletar e armazenar informações sobre raças de gatos e suas imagens.
 
@@ -14,40 +14,53 @@ Este projeto é uma aplicação Java Spring Boot que integra com a The Cat API p
 ### Tecnologias Utilizadas
 - **Java 21** com Spring Boot 3.5.6
 - **Spring Data JPA** para persistência
-- **PostgreSQL** como banco de dados principal
+- **PostgreSQL/RDS** como banco de dados principal
+- **SQS/ElasticMQ** como mensageria
 - **Spring Web** para APIs REST
-- **Lombok** para redução de boilerplate
-- **Logback** para logging estruturado
-- **Docker** para containerização
+- **Cloudwatch** para logging
+- **ECS/Docker** para containerização
 - **Maven** para gerenciamento de dependências
 
-## 🏗️ Documentação de Arquitetura
+## Documentação de Arquitetura
 
 ### Diagrama Arquitetural
 
 ```
-+----------------+     HTTP/REST     +-------------------+     JDBC      +-----------+
-|  The Cat API   | <---------------> |  Spring Boot App  | <-----------> |  Database |
-| (external)     |                   |                   |               | (Postgres)|
-+----------------+                   +-------------------+               +-----------+
-         ^                                  |  ^
-         |                                  |  |
-         |                            HTTP  |  | HTTP/REST
-         |                                  |  |
-         |                                  v  |
-         |                            +-----------------+
-         +--------------------------- |   Client Apps   |
-                              (async) +-----------------+
++-------------------+        +-------------------+        +-------------------+
+|    Usuário/API    | <----> |  Load Balancer    | <----> |  ECS + Fargate    |
+| (Postman/Frontend)|        | (ALB)             |        | (Spring Boot App) |
++-------------------+        +-------------------+        +-------------------+
+                                                              |         |        
+                                                              |         |
+                                                              v         v
+                                                  +----------------+  +----------------+
+                                                  | RDS PostgreSQL |  |     SQS        |
+                                                  | (Raças, Imagens|  | (Fila Emails)  |
+                                                  |  e Metadados)  |  +----------------+
+                                                  +----------------+
+                                                              ↑
+                                                              |
+                                                  +----------------------+
+                                                  | The Cat API Ingestor |
+                                                  | (Job ou Serviço)     |
+                                                  | - Consulta externa   |
+                                                  | - Processamento      |
+                                                  | - Persistência       |
+                                                  +----------------------+
+
 ```
 
 ### Fluxo de Dados
-1. A aplicação inicia e carrega dados da The Cat API
+1. A aplicação inicia e dados podem ser carregados através da chamada:
+```http
+   /api/external/collect-data
+```
 2. Utiliza threads paralelas para buscar:
     - Informações das raças
     - Imagens por raça
 3. Armazena dados no banco de dados
 4. Expõe APIs REST para consulta
-5. Logs são enviados para console e arquivos estruturados
+5. Logs são enviados para console e Cloudwatch
 
 ## Documentação das APIs
 
@@ -65,7 +78,8 @@ GET /api/breeds
     "name": "string",
     "origin": "string",
     "temperament": "string",
-    "description": "string"
+    "description": "string",
+    "imageUrl": "string"
   }
 ]
 ```
@@ -77,11 +91,12 @@ GET /api/breeds/{breedId}
 **Response:**
 ```json
 {
-  "id": "string",
-  "name": "string",
-  "origin": "string",
-  "temperament": "string",
-  "description": "string"
+   "id": "string",
+   "name": "string",
+   "origin": "string",
+   "temperament": "string",
+   "description": "string", 
+   "imageUrl": "string"
 }
 ```
 
@@ -145,12 +160,19 @@ GET /api/breeds?origin={origin}
 }
 ```
 
+## Como Configurar a Chave da API
+- Acesse https://thecatapi.com/
+- A partir do cadastro, uma chave é recebida no e-mail
+- Altere a propriedade `thecatapi.api-key` em `application.properties` com sua chave
+
+
 ## Como Executar Localmente
 
 ### Pré-requisitos
 - Java 21 ou superior
 - Maven 3.6+
 - Docker e Docker Compose (opcional)
+- É altamente recomendado configurar uma chave de API
 
 ### Método 1: Usando Docker (Recomendado)
 
@@ -245,7 +267,7 @@ src/
 │   │   └── TheCatApiIntegrationApplication.java
 │   └── resources/
 │       └── application.properties
-└── test/                    # Testes unitários e de integração
+└── test/                    # Testes unitários
 ```
 
 ## Configuração do Banco de Dados
@@ -262,6 +284,12 @@ A coleção do Postman está disponível em:
 `/postman/The_Cat_API_Collection.json`
 
 Importe este arquivo no Postman para testar todas as APIs.
+
+## Deploy na Nuvem
+
+### Opção AWS Fargate (Bônus)
+1. Deploy feito automaticamente através de Git Actions
+2. Terraform para provisionamento
 
 ## Suporte
 
